@@ -102,8 +102,49 @@ const Dashboard = () => {
       </Select>
       {currentPage === 1 && (
         <>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Consumption by Source</Typography>
+              <Select value={month} onChange={handleMonthChange} sx={{ color: 'white', backgroundColor: 'black', mb: 2 }}>
+                <MenuItem value="January">January</MenuItem>
+                <MenuItem value="February">February</MenuItem>
+                <MenuItem value="March">March</MenuItem>
+                <MenuItem value="April">April</MenuItem>
+                <MenuItem value="May">May</MenuItem>
+                <MenuItem value="June">June</MenuItem>
+                <MenuItem value="July">July</MenuItem>
+                <MenuItem value="August">August</MenuItem>
+                <MenuItem value="September">September</MenuItem>
+                <MenuItem value="October">October</MenuItem>
+                <MenuItem value="November">November</MenuItem>
+                <MenuItem value="December">December</MenuItem>
+              </Select>
+              <PieChart width={400} height={400}>
+                <Pie
+                  data={pieData}
+                  cx={200}
+                  cy={200}
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </Box>
+          </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
             <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Total Consumption</Typography>
+              <Select value={year} onChange={handleYearChange} sx={{ color: 'white', backgroundColor: 'black', mb: 2 }}>
+                <MenuItem value="2023">2023</MenuItem>
+                <MenuItem value="2024">2024</MenuItem>
+              </Select>
               <LineChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
