@@ -95,7 +95,6 @@ const Dashboard = () => {
       <Typography variant="h4" gutterBottom sx={{ color: 'white', textAlign: 'center' }}>
         Energy Consumption Dashboard
       </Typography>
-      <Typography variant="h6" sx={{ color: 'white' }}>Total Consumption</Typography>
       <Select value={year} onChange={handleYearChange} sx={{ color: 'white', backgroundColor: 'black', mb: 2 }}>
         <MenuItem value="2023">2023</MenuItem>
         <MenuItem value="2024">2024</MenuItem>
@@ -104,6 +103,7 @@ const Dashboard = () => {
         <>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
             <Box>
+            <Typography variant="h6" sx={{ color: 'white' }}>Total Consumption</Typography>
               <LineChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
