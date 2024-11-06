@@ -173,42 +173,6 @@ const Dashboard = () => {
         <>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
             <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Consumption by Source</Typography>
-              <Select value={month} onChange={handleMonthChange} sx={{ color: 'white', backgroundColor: 'black', mb: 2 }}>
-                <MenuItem value="January">January</MenuItem>
-                <MenuItem value="February">February</MenuItem>
-                <MenuItem value="March">March</MenuItem>
-                <MenuItem value="April">April</MenuItem>
-                <MenuItem value="May">May</MenuItem>
-                <MenuItem value="June">June</MenuItem>
-                <MenuItem value="July">July</MenuItem>
-                <MenuItem value="August">August</MenuItem>
-                <MenuItem value="September">September</MenuItem>
-                <MenuItem value="October">October</MenuItem>
-                <MenuItem value="November">November</MenuItem>
-                <MenuItem value="December">December</MenuItem>
-              </Select>
-              <PieChart width={400} height={400}>
-                <Pie
-                  data={pieData}
-                  cx={200}
-                  cy={200}
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </Box>
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-            <Box>
               <Typography variant="h6" sx={{ color: 'white' }}>HTC 179 and HTC 232</Typography>
               <BarChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -281,31 +245,6 @@ const Dashboard = () => {
                 <Bar dataKey="savingsFrom1MWpSolar" fill="#8884d8" name="Savings from 1 MWp Solar" />
                 <Bar dataKey="savingsFromCapex" fill="#82ca9d" name="Savings from Capex" />
               </BarChart>
-            </Box>
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>HTC 179 Amount and HTC 232 Amount</Typography>
-              <BarChart width={600} height={300} data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" stroke="white" />
-                <YAxis stroke="white" />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="htc179Amount" fill="#8884d8" name="HTC 179 Amount" />
-                <Bar dataKey="htc232Amount" fill="#82ca9d" name="HTC 232 Amount" />
-              </BarChart>
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Total Amount</Typography>
-              <LineChart width={600} height={300} data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" stroke="white" />
-                <YAxis stroke="white" />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="totalAmount" stroke="#ff7300" />
-              </LineChart>
             </Box>
           </Box>
         </>
