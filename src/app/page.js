@@ -58,7 +58,7 @@ const Home = () => {
                 description:
                   "By saving energy, we can significantly reduce our carbon emissions and combat climate change.",
                 image:
-                  "/solar-panel.jpg",
+                  "/solar-panel.jpeg",
               },
               {
                 title: "Lower Energy Costs",
