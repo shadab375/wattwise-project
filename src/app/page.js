@@ -37,7 +37,7 @@ const Home = () => {
             </Grid>
             <Grid item xs={12} md={6}>
               <Image
-                src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e"
+                src="/bdome.jpg"
                 alt="Sustainable Energy"
                 width={600}
                 height={400}
@@ -58,14 +58,14 @@ const Home = () => {
                 description:
                   "By saving energy, we can significantly reduce our carbon emissions and combat climate change.",
                 image:
-                  "https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9",
+                  "/solar-panel.jpg",
               },
               {
                 title: "Lower Energy Costs",
                 description:
                   "Efficient energy use leads to reduced electricity bills, saving money for our institution.",
                 image:
-                  "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e",
+                  "/Indian-currency.jpg",
               },
               {
                 title: "Build a Sustainable Campus",
