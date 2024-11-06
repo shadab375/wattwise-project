@@ -145,14 +145,6 @@ const Home = () => {
               Join us in our mission to create a more sustainable BITS Goa.
               Every small action counts!
             </Typography>
-            <Link href="/login">
-              <Button
-                variant="contained"
-                className="bg-[#FFFFFF] text-[#04080F] hover:bg-[#B8DBD9] px-6 py-3 rounded-full text-lg font-semibold transition duration-300"
-              >
-                Get Started Now
-              </Button>
-            </Link>
           </div>
         </section>
       </main>
@@ -200,7 +192,7 @@ const Home = () => {
                         item === "Dashboard"
                           ? "/dashboard"
                           : item === "Login"
-                            ? "/login"
+                            ? "/api/auth/callback/google"
                             : "#"
                       }
                       className="text-[#B8DBD9] hover:text-[#FFFFFF] transition-colors duration-200 flex items-center"
