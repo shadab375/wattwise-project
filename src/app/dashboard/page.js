@@ -112,6 +112,9 @@ const Dashboard = () => {
                 <Legend />
                 <Line type="monotone" dataKey="consumption" stroke="#8884d8" name="Total Consumption" />
               </LineChart>
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Total Solar</Typography>
               <LineChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
@@ -120,6 +123,11 @@ const Dashboard = () => {
                 <Legend />
                 <Line type="monotone" dataKey="solar" stroke="#82ca9d" name="Total Solar" />
               </LineChart>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Other Sources</Typography>
               <LineChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
@@ -129,8 +137,6 @@ const Dashboard = () => {
                 <Line type="monotone" dataKey="otherSources" stroke="#ff7300" name="Other Sources" />
               </LineChart>
             </Box>
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
             <Box>
               <Typography variant="h6" sx={{ color: 'white' }}>Total Savings</Typography>
               <LineChart width={600} height={300} data={lineData}>
