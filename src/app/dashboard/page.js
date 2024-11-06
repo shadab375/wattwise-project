@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
-import { Box, Container, Typography, MenuItem, Select } from '@mui/material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, AreaChart, Area } from 'recharts';
+import { Box, Container, Typography, MenuItem, Select, Button } from '@mui/material';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
   const [data, setData] = useState([]);
   const [year, setYear] = useState('2023');
+  const [month, setMonth] = useState('January');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,6 +29,14 @@ const Dashboard = () => {
 
   const handleYearChange = (event) => {
     setYear(event.target.value);
+  };
+
+  const handleMonthChange = (event) => {
+    setMonth(event.target.value);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   const processData = (data) => {
@@ -56,10 +66,18 @@ const Dashboard = () => {
       totalAmount: parseFloat(row[18])
     }));
 
-    return { lineData };
+    const pieData = lineData.filter(row => row.date.includes(month)).map(row => ({
+      name: 'Solar',
+      value: row.solar
+    })).concat(lineData.filter(row => row.date.includes(month)).map(row => ({
+      name: 'Other Sources',
+      value: row.otherSources
+    })));
+
+    return { lineData, pieData };
   };
 
-  const { lineData } = processData(data);
+  const { lineData, pieData } = processData(data);
 
   if (status === 'loading') {
     return <div>Loading...</div>;
@@ -70,181 +88,235 @@ const Dashboard = () => {
     return null;
   }
 
+  const COLORS = ['#0088FE', '#FFBB28'];
+
   return (
-    <Container sx={{ color: 'white', backgroundColor: '#1e1e1e', padding: '20px', borderRadius: '10px' }}>
+    <Container sx={{ color: 'white', backgroundColor: 'black', padding: '20px', borderRadius: '10px' }}>
       <Typography variant="h4" gutterBottom sx={{ color: 'white', textAlign: 'center' }}>
         Energy Consumption Dashboard
       </Typography>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-        <Box>
-          <Typography variant="h6" sx={{ color: 'white' }}>Total Consumption</Typography>
-          <Select value={year} onChange={handleYearChange} sx={{ color: 'white', backgroundColor: 'black', mb: 2 }}>
-            <MenuItem value="2023">2023</MenuItem>
-            <MenuItem value="2024">2024</MenuItem>
-          </Select>
-          <LineChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="consumption" stroke="#8884d8" name="Total Consumption" />
-          </LineChart>
-          <LineChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="solar" stroke="#82ca9d" name="Total Solar" />
-          </LineChart>
-          <LineChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="otherSources" stroke="#ff7300" name="Other Sources" />
-          </LineChart>
-        </Box>
-      </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-        <Box>
-          <Typography variant="h6" sx={{ color: 'white' }}>Total Savings</Typography>
-          <LineChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="savings" stroke="#82ca9d" />
-          </LineChart>
-        </Box>
-      </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-        <Box>
-          <Typography variant="h6" sx={{ color: 'white' }}>Solar Percentage</Typography>
-          <AreaChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Area type="monotone" dataKey="solarPercentage" stroke="#82ca9d" fill="#82ca9d" />
-          </AreaChart>
-        </Box>
-        <Box>
-          <Typography variant="h6" sx={{ color: 'white' }}>Total Savings from Solar</Typography>
-          <LineChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="totalSavings" stroke="#ff7300" />
-          </LineChart>
-        </Box>
-      </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-        <Box>
-          <Typography variant="h6" sx={{ color: 'white' }}>HTC 179 and HTC 232</Typography>
-          <BarChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="htc179" fill="#8884d8" name="HTC 179" />
-            <Bar dataKey="htc232" fill="#82ca9d" name="HTC 232" />
-          </BarChart>
-        </Box>
-        <Box>
-          <Typography variant="h6" sx={{ color: 'white' }}>Total GED</Typography>
-          <LineChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="totalGED" stroke="#ff7300" />
-          </LineChart>
-        </Box>
-      </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-        <Box>
-          <Typography variant="h6" sx={{ color: 'white' }}>Solar Capex and Opex</Typography>
-          <BarChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="solarCapex" fill="#8884d8" name="Solar Capex" />
-            <Bar dataKey="solarOpex" fill="#82ca9d" name="Solar Opex" />
-          </BarChart>
-        </Box>
-        <Box>
-          <Typography variant="h6" sx={{ color: 'white' }}>C2 kWh and Solar Percentage of C2</Typography>
-          <LineChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="c2kWh" stroke="#ff7300" name="C2 kWh" />
-            <Line type="monotone" dataKey="c2SolarPercentage" stroke="#82ca9d" name="Solar Percentage of C2" />
-          </LineChart>
-        </Box>
-      </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-        <Box>
-          <Typography variant="h6" sx={{ color: 'white' }}>Rs/kWh</Typography>
-          <LineChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="rsPerKWh" stroke="#ff7300" />
-          </LineChart>
-        </Box>
-        <Box>
-          <Typography variant="h6" sx={{ color: 'white' }}>Savings from 1 MWp Solar and Capex</Typography>
-          <BarChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="savingsFrom1MWpSolar" fill="#8884d8" name="Savings from 1 MWp Solar" />
-            <Bar dataKey="savingsFromCapex" fill="#82ca9d" name="Savings from Capex" />
-          </BarChart>
-        </Box>
-      </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-        <Box>
-          <Typography variant="h6" sx={{ color: 'white' }}>HTC 179 Amount and HTC 232 Amount</Typography>
-          <BarChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="htc179Amount" fill="#8884d8" name="HTC 179 Amount" />
-            <Bar dataKey="htc232Amount" fill="#82ca9d" name="HTC 232 Amount" />
-          </BarChart>
-        </Box>
-        <Box>
-          <Typography variant="h6" sx={{ color: 'white' }}>Total Amount</Typography>
-          <LineChart width={600} height={300} data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="white" />
-            <YAxis stroke="white" />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="totalAmount" stroke="#ff7300" />
-          </LineChart>
-        </Box>
+      {currentPage === 1 && (
+        <>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Total Consumption</Typography>
+              <Select value={year} onChange={handleYearChange} sx={{ color: 'white', backgroundColor: 'black', mb: 2 }}>
+                <MenuItem value="2023">2023</MenuItem>
+                <MenuItem value="2024">2024</MenuItem>
+              </Select>
+              <LineChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="consumption" stroke="#8884d8" name="Total Consumption" />
+              </LineChart>
+              <LineChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="solar" stroke="#82ca9d" name="Total Solar" />
+              </LineChart>
+              <LineChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="otherSources" stroke="#ff7300" name="Other Sources" />
+              </LineChart>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Total Savings</Typography>
+              <LineChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="savings" stroke="#82ca9d" />
+              </LineChart>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Solar Percentage</Typography>
+              <AreaChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Area type="monotone" dataKey="solarPercentage" stroke="#82ca9d" fill="#82ca9d" />
+              </AreaChart>
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Total Savings from Solar</Typography>
+              <LineChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="totalSavings" stroke="#ff7300" />
+              </LineChart>
+            </Box>
+          </Box>
+        </>
+      )}
+      {currentPage === 2 && (
+        <>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Consumption by Source</Typography>
+              <Select value={month} onChange={handleMonthChange} sx={{ color: 'white', backgroundColor: 'black', mb: 2 }}>
+                <MenuItem value="January">January</MenuItem>
+                <MenuItem value="February">February</MenuItem>
+                <MenuItem value="March">March</MenuItem>
+                <MenuItem value="April">April</MenuItem>
+                <MenuItem value="May">May</MenuItem>
+                <MenuItem value="June">June</MenuItem>
+                <MenuItem value="July">July</MenuItem>
+                <MenuItem value="August">August</MenuItem>
+                <MenuItem value="September">September</MenuItem>
+                <MenuItem value="October">October</MenuItem>
+                <MenuItem value="November">November</MenuItem>
+                <MenuItem value="December">December</MenuItem>
+              </Select>
+              <PieChart width={400} height={400}>
+                <Pie
+                  data={pieData}
+                  cx={200}
+                  cy={200}
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>HTC 179 and HTC 232</Typography>
+              <BarChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="htc179" fill="#8884d8" name="HTC 179" />
+                <Bar dataKey="htc232" fill="#82ca9d" name="HTC 232" />
+              </BarChart>
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Total GED</Typography>
+              <LineChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="totalGED" stroke="#ff7300" />
+              </LineChart>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Solar Capex and Opex</Typography>
+              <BarChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="solarCapex" fill="#8884d8" name="Solar Capex" />
+                <Bar dataKey="solarOpex" fill="#82ca9d" name="Solar Opex" />
+              </BarChart>
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>C2 kWh and Solar Percentage of C2</Typography>
+              <LineChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="c2kWh" stroke="#ff7300" name="C2 kWh" />
+                <Line type="monotone" dataKey="c2SolarPercentage" stroke="#82ca9d" name="Solar Percentage of C2" />
+              </LineChart>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Rs/kWh</Typography>
+              <LineChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="rsPerKWh" stroke="#ff7300" />
+              </LineChart>
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Savings from 1 MWp Solar and Capex</Typography>
+              <BarChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="savingsFrom1MWpSolar" fill="#8884d8" name="Savings from 1 MWp Solar" />
+                <Bar dataKey="savingsFromCapex" fill="#82ca9d" name="Savings from Capex" />
+              </BarChart>
+            </Box>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>HTC 179 Amount and HTC 232 Amount</Typography>
+              <BarChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="htc179Amount" fill="#8884d8" name="HTC 179 Amount" />
+                <Bar dataKey="htc232Amount" fill="#82ca9d" name="HTC 232 Amount" />
+              </BarChart>
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white' }}>Total Amount</Typography>
+              <LineChart width={600} height={300} data={lineData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" stroke="white" />
+                <YAxis stroke="white" />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="totalAmount" stroke="#ff7300" />
+              </LineChart>
+            </Box>
+          </Box>
+        </>
+      )}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Button variant="contained" onClick={() => handlePageChange(1)} disabled={currentPage === 1}>
+          Page 1
+        </Button>
+        <Button variant="contained" onClick={() => handlePageChange(2)} disabled={currentPage === 2} sx={{ ml: 2 }}>
+          Page 2
+        </Button>
       </Box>
     </Container>
   );
