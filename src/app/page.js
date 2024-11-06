@@ -27,78 +27,94 @@ const Home = () => {
                 Future
               </Typography>
               <Link href="/dashboard">
-                <Button
-                  variant="contained"
-                  className="bg-[#507DBC] hover:bg-[#3A5A8C] text-white px-6 py-3 rounded-full text-lg font-semibold transition duration-300"
-                >
-                  Explore Dashboard
-                </Button>
+              <Button
+  variant="contained"
+  className="bg-[#507DBC] text-white px-6 py-3 rounded-full text-lg font-semibold transition duration-300 transform hover:scale-105 hover:shadow-lg"
+>
+  Explore Dashboard
+</Button>
+
               </Link>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Image
-                src="/bdome.jpg"
-                alt="Sustainable Energy"
-                width={600}
-                height={400}
-                className="rounded-lg shadow-lg"
-              />
+            <div className="relative overflow-hidden rounded-lg shadow-lg transition-transform transform hover:scale-105 hover:shadow-2xl hover:shadow-[#507DBC]/50">
+  <Image
+    src="/bdome.jpg"
+    alt="Sustainable Energy"
+    width={600}
+    height={400}
+    className="rounded-lg transition-opacity duration-300 opacity-90 hover:opacity-100"
+  />
+  <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-opacity duration-300 rounded-lg"></div>
+</div>
+
             </Grid>
           </Grid>
         </section>
 
         <section className="mb-16">
-          <Typography variant="h3" className="mb-8 text-center text-[#507DBC]">
-            Why Save Energy?
-          </Typography>
+        <div className="flex justify-center">
+  <div
+    className="bg-[#1F2A37] bg-opacity-90 px-6 py-4 rounded-lg shadow-md transition-transform transform hover:scale-105 hover:bg-[#2A3B4F] w-fit"
+  >
+    <Typography
+      variant="h3"
+      className="text-center text-[#507DBC] font-bold transition-colors duration-300 hover:text-[#B8DBD9]"
+      style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '0.05em' }}
+    >
+      Why Save Energy?
+    </Typography>
+  </div>
+</div>
+<br></br>
           <Grid container spacing={4}>
-            {[
-              {
-                title: "Reduce Carbon Footprint",
-                description:
-                  "By saving energy, we can significantly reduce our carbon emissions and combat climate change.",
-                image:
-                  "/solar-panel.jpeg",
-              },
-              {
-                title: "Lower Energy Costs",
-                description:
-                  "Efficient energy use leads to reduced electricity bills, saving money for our institution.",
-                image:
-                  "/Indian-currency.jpg",
-              },
-              {
-                title: "Build a Sustainable Campus",
-                description:
-                  "Energy conservation helps create a more sustainable and eco-friendly learning environment.",
-                image:
-                  "https://images.unsplash.com/photo-1453728013993-6d66e9c9123a",
-              },
-            ].map((item, index) => (
-              <Grid item xs={12} md={4} key={index}>
-                <div className="bg-[#507DBC] bg-opacity-10 p-6 rounded-lg shadow-lg h-full flex flex-col items-center">
-                  <div
-                    className="relative w-full"
-                    style={{ paddingBottom: "56.25%" }}
-                  >
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      layout="fill"
-                      objectFit="cover"
-                      className="rounded-lg mb-4"
-                    />
-                  </div>
-                  <Typography variant="h5" className="mb-2 text-[#B8DBD9]">
-                    {item.title}
-                  </Typography>
-                  <Typography variant="body1" className="text-[#FFFFFF]">
-                    {item.description}
-                  </Typography>
-                </div>
-              </Grid>
-            ))}
-          </Grid>
+  {[
+    {
+      title: "Reduce Carbon Footprint",
+      description:
+        "By saving energy, we can significantly reduce our carbon emissions and combat climate change.",
+      image: "/carbon.jpeg",
+    },
+    {
+      title: "Lower Energy Costs",
+      description:
+        "Efficient energy use leads to reduced electricity bills, saving money for our institution.",
+      image: "/cost.png",
+    },
+    {
+      title: "Build a Sustainable Campus",
+      description:
+        "Energy conservation helps create a more sustainable and eco-friendly learning environment.",
+      image: "/sustain.jpg",
+    },
+  ].map((item, index) => (
+    <Grid item xs={12} md={4} key={index}>
+      <div
+        className="bg-[#507DBC] bg-opacity-10 p-6 rounded-lg shadow-lg h-full flex flex-col items-center transform transition-transform hover:scale-105 active:scale-110"
+      >
+        <div
+          className="relative w-full transition-transform duration-300"
+          style={{ paddingBottom: "56.25%" }}
+        >
+          <Image
+            src={item.image}
+            alt={item.title}
+            layout="fill"
+            objectFit="cover"
+            className="rounded-lg mb-4 hover:shadow-lg transition duration-300 transform hover:scale-105 active:scale-110"
+          />
+        </div>
+        <Typography variant="h5" className="mb-2 text-[#B8DBD9]">
+          {item.title}
+        </Typography>
+        <Typography variant="body1" className="text-[#FFFFFF]">
+          {item.description}
+        </Typography>
+      </div>
+    </Grid>
+  ))}
+</Grid>
+
         </section>
 
         <section className="mb-16">
@@ -229,7 +245,7 @@ const Home = () => {
           </div>
           <div className="border-t border-[#507DBC] mt-8 pt-8 text-center">
             <p className="text-[#B8DBD9]">
-              © {new Date().getFullYear()} WattWise - BITS Goa. All rights
+              © {new Date().getFullYear()} WattWise - BITS Pilani, K.K. Birla Goa Campus. All rights
               reserved.
             </p>
           </div>
