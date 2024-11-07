@@ -114,7 +114,7 @@ const Dashboard = () => {
               </LineChart>
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Total Solar</Typography>
+              <Typography variant="h6" sx={{ color: 'white' }}>Solar Capex (kWh)</Typography>
               <LineChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
@@ -127,7 +127,7 @@ const Dashboard = () => {
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
             <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Other Sources</Typography>
+              <Typography variant="h6" sx={{ color: 'white' }}>Non-solar sources</Typography>
               <LineChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
@@ -151,7 +151,7 @@ const Dashboard = () => {
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
             <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Solar Percentage</Typography>
+              <Typography variant="h6" sx={{ color: 'white' }}>Total Solar (kWh)</Typography>
               <AreaChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
