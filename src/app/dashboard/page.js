@@ -92,7 +92,24 @@ const Dashboard = () => {
 
   return (
     <Container sx={{ color: 'white', backgroundColor: 'black', padding: '20px', borderRadius: '10px' }}>
-      <Typography variant="h4" gutterBottom sx={{ color: 'white', textAlign: 'center' }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{
+          color: 'white',
+          textAlign: 'center',
+          marginBottom: '40px',
+          padding: '20px',
+          background: 'linear-gradient(45deg, #82ca9d, #0069ff)',
+          borderRadius: '10px',
+          transition: 'background 0.3s, color 0.3s',
+          '&:hover': {
+            background: 'linear-gradient(45deg,#75917f, #719fe1)',
+            color: 'black',
+            
+          },
+        }}
+      >
         Energy Consumption Dashboard
       </Typography>
       <Select value={year} onChange={handleYearChange} sx={{ color: 'white', backgroundColor: 'black', mb: 2 }}>
