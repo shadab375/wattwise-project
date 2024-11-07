@@ -120,7 +120,7 @@ const Dashboard = () => {
         <>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
             <Box>
-            <Typography variant="h6" sx={{ color: 'white' }}>Total Consumption</Typography>
+            <Typography variant="h6" sx={{ color: 'white' }}>Total Consumption (kWh)</Typography>
               <LineChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
@@ -144,7 +144,7 @@ const Dashboard = () => {
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
             <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Non-solar sources</Typography>
+              <Typography variant="h6" sx={{ color: 'white' }}>Non-solar sources (kWh)</Typography>
               <LineChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
