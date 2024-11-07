@@ -138,7 +138,7 @@ const Dashboard = () => {
               </LineChart>
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Total Savings</Typography>
+              <Typography variant="h6" sx={{ color: 'white' }}>Total Savings from Solar (Rs)</Typography>
               <LineChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
