@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { Box, Container, Typography, MenuItem, Select, Button } from '@mui/material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, AreaChart, Area } from 'recharts';
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
@@ -17,7 +17,6 @@ const Dashboard = () => {
       try {
         const response = await fetch('/api/getSheetsData');
         const result = await response.json();
-        console.log(result);
         setData(result);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -91,20 +90,54 @@ const Dashboard = () => {
   const COLORS = ['#0088FE', '#FFBB28'];
 
   return (
-    <Container sx={{ color: 'white', backgroundColor: 'black', padding: '20px', borderRadius: '10px' }}>
-      <Typography variant="h4" gutterBottom sx={{ color: 'white', textAlign: 'center' }}>
+    <Container sx={{
+      color: 'white',
+      backgroundColor: 'black',
+      padding: '70px',
+      borderRadius: '10px',
+      minHeight: '100vh',
+    }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{
+          color: 'white',
+          textAlign: 'center',
+          marginBottom: '40px',
+          padding: '20px',
+          background: 'linear-gradient(45deg, #82ca9d, #0069ff)',
+          borderRadius: '10px',
+          transition: 'background 0.3s, color 0.3s',
+          '&:hover': {
+            background: 'linear-gradient(45deg,#75917f, #719fe1)',
+            color: 'black',
+            
+          },
+        }}
+      >
         Energy Consumption Dashboard
       </Typography>
-      <Select value={year} onChange={handleYearChange} sx={{ color: 'white', backgroundColor: 'black', mb: 2 }}>
-        <MenuItem value="2023">2023</MenuItem>
-        <MenuItem value="2024">2024</MenuItem>
-      </Select>
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+        <Select value={year} onChange={handleYearChange} sx={{ color: 'white', backgroundColor: 'black', marginRight: '20px' }}>
+          <MenuItem value="2023">2023</MenuItem>
+          <MenuItem value="2024">2024</MenuItem>
+        </Select>
+
+        <Select value={month} onChange={handleMonthChange} sx={{ color: 'white', backgroundColor: 'black' }}>
+          <MenuItem value="January">January</MenuItem>
+          <MenuItem value="February">February</MenuItem>
+          <MenuItem value="March">March</MenuItem>
+          {/* Add other months here */}
+        </Select>
+      </Box>
+
       {currentPage === 1 && (
         <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-            <Box>
-            <Typography variant="h6" sx={{ color: 'white' }}>Total Consumption</Typography>
-              <LineChart width={600} height={300} data={lineData}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap' }}>
+            <Box sx={{ flex: '1', minWidth: '300px', marginBottom: '30px' }}>
+              <Typography variant="h6" sx={{ color: 'white', textAlign: 'center' }}>Total Consumption</Typography>
+              <LineChart width={500} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
                 <YAxis stroke="white" />
@@ -113,9 +146,10 @@ const Dashboard = () => {
                 <Line type="monotone" dataKey="consumption" stroke="#8884d8" name="Total Consumption" />
               </LineChart>
             </Box>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Total Solar</Typography>
-              <LineChart width={600} height={300} data={lineData}>
+
+            <Box sx={{ flex: '1', minWidth: '300px', marginBottom: '30px' }}>
+              <Typography variant="h6" sx={{ color: 'white', textAlign: 'center' }}>Total Solar</Typography>
+              <LineChart width={500} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
                 <YAxis stroke="white" />
@@ -125,10 +159,11 @@ const Dashboard = () => {
               </LineChart>
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Other Sources</Typography>
-              <LineChart width={600} height={300} data={lineData}>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap' }}>
+            <Box sx={{ flex: '1', minWidth: '300px', marginBottom: '30px' }}>
+              <Typography variant="h6" sx={{ color: 'white', textAlign: 'center' }}>Other Sources</Typography>
+              <LineChart width={500} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
                 <YAxis stroke="white" />
@@ -137,9 +172,10 @@ const Dashboard = () => {
                 <Line type="monotone" dataKey="otherSources" stroke="#ff7300" name="Other Sources" />
               </LineChart>
             </Box>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Total Savings</Typography>
-              <LineChart width={600} height={300} data={lineData}>
+
+            <Box sx={{ flex: '1', minWidth: '300px', marginBottom: '30px' }}>
+              <Typography variant="h6" sx={{ color: 'white', textAlign: 'center' }}>Total Savings</Typography>
+              <LineChart width={500} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
                 <YAxis stroke="white" />
@@ -149,10 +185,10 @@ const Dashboard = () => {
               </LineChart>
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Solar Percentage</Typography>
-              <AreaChart width={600} height={300} data={lineData}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap' }}>
+            <Box sx={{ flex: '1', minWidth: '300px', marginBottom: '30px' }}>
+              <Typography variant="h6" sx={{ color: 'white', textAlign: 'center' }}>Solar Percentage</Typography>
+              <AreaChart width={500} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
                 <YAxis stroke="white" />
@@ -161,108 +197,21 @@ const Dashboard = () => {
                 <Area type="monotone" dataKey="solarPercentage" stroke="#82ca9d" fill="#82ca9d" />
               </AreaChart>
             </Box>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Total Savings from Solar</Typography>
-              <LineChart width={600} height={300} data={lineData}>
+            <Box sx={{ flex: '1', minWidth: '300px', marginBottom: '30px' }}>
+              <Typography variant="h6" sx={{ color: 'white', textAlign: 'center' }}>Total Savings from Solar</Typography>
+              <LineChart width={500} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
                 <YAxis stroke="white" />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="totalSavings" stroke="#ff7300" />
+                <Line type="monotone" dataKey="totalSavings" stroke="#8884d8" />
               </LineChart>
             </Box>
           </Box>
         </>
       )}
-      {currentPage === 2 && (
-        <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>HTC 179 and HTC 232</Typography>
-              <BarChart width={600} height={300} data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" stroke="white" />
-                <YAxis stroke="white" />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="htc179" fill="#8884d8" name="HTC 179" />
-                <Bar dataKey="htc232" fill="#82ca9d" name="HTC 232" />
-              </BarChart>
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Total GED</Typography>
-              <LineChart width={600} height={300} data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" stroke="white" />
-                <YAxis stroke="white" />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="totalGED" stroke="#ff7300" />
-              </LineChart>
-            </Box>
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Solar Capex and Opex</Typography>
-              <BarChart width={600} height={300} data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" stroke="white" />
-                <YAxis stroke="white" />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="solarCapex" fill="#8884d8" name="Solar Capex" />
-                <Bar dataKey="solarOpex" fill="#82ca9d" name="Solar Opex" />
-              </BarChart>
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>C2 kWh and Solar Percentage of C2</Typography>
-              <LineChart width={600} height={300} data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" stroke="white" />
-                <YAxis stroke="white" />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="c2kWh" stroke="#ff7300" name="C2 kWh" />
-                <Line type="monotone" dataKey="c2SolarPercentage" stroke="#82ca9d" name="Solar Percentage of C2" />
-              </LineChart>
-            </Box>
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Rs/kWh</Typography>
-              <LineChart width={600} height={300} data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" stroke="white" />
-                <YAxis stroke="white" />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="rsPerKWh" stroke="#ff7300" />
-              </LineChart>
-            </Box>
-            <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Savings from 1 MWp Solar and Capex</Typography>
-              <BarChart width={600} height={300} data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" stroke="white" />
-                <YAxis stroke="white" />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="savingsFrom1MWpSolar" fill="#8884d8" name="Savings from 1 MWp Solar" />
-                <Bar dataKey="savingsFromCapex" fill="#82ca9d" name="Savings from Capex" />
-              </BarChart>
-            </Box>
-          </Box>
-        </>
-      )}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <Button variant="contained" onClick={() => handlePageChange(1)} disabled={currentPage === 1}>
-          Page 1
-        </Button>
-        <Button variant="contained" onClick={() => handlePageChange(2)} disabled={currentPage === 2} sx={{ ml: 2 }}>
-          Page 2
-        </Button>
-      </Box>
+    
     </Container>
   );
 };
