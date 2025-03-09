@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
-import { Box, Container, Typography, MenuItem, Select, Button } from '@mui/material';
+import { Box, Container, Typography, MenuItem, Select, Button, Switch, FormControlLabel } from '@mui/material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
 
 const Dashboard = () => {
@@ -11,21 +11,44 @@ const Dashboard = () => {
   const [year, setYear] = useState('2023');
   const [month, setMonth] = useState('January');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showPredictions, setShowPredictions] = useState(false);
+  const [predictedData, setPredictedData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch('/api/getSheetsData');
         const result = await response.json();
-        console.log(result);
         setData(result);
+        
+        // If predictions are enabled, fetch them immediately after getting the data
+        if (showPredictions) {
+          const processedData = processData(result);
+          fetchPredictions(processedData.lineData);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [showPredictions]);
+
+  const fetchPredictions = async (historicalData) => {
+    try {
+      const response = await fetch('/api/getPredictions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ historicalData }),
+      });
+      const predictions = await response.json();
+      setPredictedData(predictions);
+    } catch (error) {
+      console.error('Error fetching predictions:', error);
+    }
+  };
 
   const handleYearChange = (event) => {
     setYear(event.target.value);
@@ -37,6 +60,10 @@ const Dashboard = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const handlePredictionToggle = (event) => {
+    setShowPredictions(event.target.checked);
   };
 
   const processData = (data) => {
@@ -106,39 +133,73 @@ const Dashboard = () => {
           '&:hover': {
             background: 'linear-gradient(45deg,#75917f, #719fe1)',
             color: 'black',
-            
           },
         }}
       >
         Energy Consumption Dashboard
       </Typography>
-      <Select value={year} onChange={handleYearChange} sx={{ color: 'white', backgroundColor: 'black', mb: 2 }}>
-        <MenuItem value="2023">2023</MenuItem>
-        <MenuItem value="2024">2024</MenuItem>
-      </Select>
+
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+        <Select value={year} onChange={handleYearChange} sx={{ color: 'white', backgroundColor: 'black' }}>
+          <MenuItem value="2023">2023</MenuItem>
+          <MenuItem value="2024">2024</MenuItem>
+        </Select>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={showPredictions}
+              onChange={handlePredictionToggle}
+              color="primary"
+            />
+          }
+          label="Show Predictions"
+          sx={{ color: 'white' }}
+        />
+      </Box>
+
       {currentPage === 1 && (
         <>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
             <Box>
-            <Typography variant="h6" sx={{ color: 'white' }}>Total Consumption (kWh)</Typography>
+              <Typography variant="h6" sx={{ color: 'white' }}>Total Consumption (kWh)</Typography>
               <LineChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
                 <YAxis stroke="white" />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="consumption" stroke="#8884d8" name="Total Consumption" />
+                <Line type="monotone" dataKey="consumption" stroke="#8884d8" name="Actual Consumption" />
+                {showPredictions && predictedData.length > 0 && (
+                  <Line 
+                    type="monotone" 
+                    data={predictedData} 
+                    dataKey="consumption" 
+                    stroke="#ff4081" 
+                    strokeDasharray="5 5" 
+                    name="Predicted Consumption"
+                  />
+                )}
               </LineChart>
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ color: 'white' }}>Solar Capex (kWh)</Typography>
+              <Typography variant="h6" sx={{ color: 'white' }}>Solar Generation (kWh)</Typography>
               <LineChart width={600} height={300} data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" stroke="white" />
                 <YAxis stroke="white" />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="solar" stroke="#82ca9d" name="Total Solar" />
+                <Line type="monotone" dataKey="solar" stroke="#82ca9d" name="Actual Solar" />
+                {showPredictions && predictedData.length > 0 && (
+                  <Line 
+                    type="monotone" 
+                    data={predictedData} 
+                    dataKey="solar" 
+                    stroke="#ff4081" 
+                    strokeDasharray="5 5" 
+                    name="Predicted Solar"
+                  />
+                )}
               </LineChart>
             </Box>
           </Box>
