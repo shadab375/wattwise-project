@@ -17,43 +17,6 @@ const Dashboard = () => {
   const [geminiInsights, setGeminiInsights] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const analyzeDataWithGemini = async (processedData) => {
-    try {
-      setIsAnalyzing(true);
-      const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      
-      // Prepare data summary for Gemini
-      const dataSummary = {
-        totalConsumption: processedData.reduce((acc, item) => acc + item.consumption, 0),
-        averageSolar: processedData.reduce((acc, item) => acc + item.solar, 0) / processedData.length,
-        totalSavings: processedData.reduce((acc, item) => acc + item.savings, 0),
-        solarPercentage: processedData.reduce((acc, item) => acc + item.solarPercentage, 0) / processedData.length,
-      };
-
-      const prompt = `Analyze this energy consumption data and provide key insights:
-        Total Consumption: ${dataSummary.totalConsumption.toFixed(2)} kWh
-        Average Solar Generation: ${dataSummary.averageSolar.toFixed(2)} kWh
-        Total Savings: Rs. ${dataSummary.totalSavings.toFixed(2)}
-        Average Solar Percentage: ${dataSummary.solarPercentage.toFixed(2)}%
-        
-        Please provide:
-        1. Key trends in energy consumption
-        2. Solar energy utilization analysis
-        3. Cost savings impact
-        4. Recommendations for improvement`;
-
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      setGeminiInsights(response.text());
-    } catch (error) {
-      console.error('Error analyzing data with Gemini:', error);
-      setGeminiInsights("Error: Failed to analyze data with Gemini");
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -74,19 +37,43 @@ const Dashboard = () => {
   }, [year]); // Re-analyze when year changes
 
   const fetchPredictions = async (historicalData) => {
-    try {
-      const response = await fetch('/api/getPredictions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ historicalData }),
-      });
-      const predictions = await response.json();
-      setPredictedData(predictions);
-    } catch (error) {
-      console.error('Error fetching predictions:', error);
-    }
+    // Simple mathematical prediction based on historical trends
+    const predictNextValues = (values, months = 6) => {
+      if (values.length < 2) return [];
+      
+      // Calculate average month-over-month change
+      let totalChange = 0;
+      for (let i = 1; i < values.length; i++) {
+        totalChange += values[i] - values[i - 1];
+      }
+      const avgChange = totalChange / (values.length - 1);
+      
+      // Generate predictions
+      const predictions = [];
+      const lastValue = values[values.length - 1];
+      const lastDate = new Date(historicalData[historicalData.length - 1].date);
+      
+      for (let i = 1; i <= months; i++) {
+        const nextDate = new Date(lastDate);
+        nextDate.setMonth(lastDate.getMonth() + i);
+        const dateStr = nextDate.toISOString().slice(0, 10);
+        
+        predictions.push({
+          date: dateStr,
+          consumption: lastValue + (avgChange * i),
+          solar: (lastValue + (avgChange * i)) * 0.3, // Assume 30% solar
+          otherSources: (lastValue + (avgChange * i)) * 0.7,
+          savings: (lastValue + (avgChange * i)) * 100, // Simple multiplier for savings
+          solarPercentage: 30,
+          totalSavings: (lastValue + (avgChange * i)) * 150,
+        });
+      }
+      return predictions;
+    };
+
+    const consumptionValues = historicalData.map(d => d.consumption);
+    const predictions = predictNextValues(consumptionValues);
+    setPredictedData(predictions);
   };
 
   const handleYearChange = (event) => {
@@ -103,6 +90,9 @@ const Dashboard = () => {
 
   const handlePredictionToggle = (event) => {
     setShowPredictions(event.target.checked);
+    if (event.target.checked && lineData.length > 0) {
+      fetchPredictions(lineData);
+    }
   };
 
   const processData = (data) => {
@@ -177,16 +167,6 @@ const Dashboard = () => {
       >
         Energy Consumption Dashboard
       </Typography>
-
-      {/* Add Gemini Insights Section */}
-      <Box sx={{ mb: 4, p: 3, backgroundColor: 'rgba(80, 125, 188, 0.1)', borderRadius: '10px' }}>
-        <Typography variant="h6" sx={{ color: '#507DBC', mb: 2 }}>
-          AI Insights {isAnalyzing && '(Analyzing...)'}
-        </Typography>
-        <Typography variant="body1" sx={{ color: 'white', whiteSpace: 'pre-line' }}>
-          {geminiInsights || 'Analyzing data...'}
-        </Typography>
-      </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
         <Select value={year} onChange={handleYearChange} sx={{ color: 'white', backgroundColor: 'black' }}>
