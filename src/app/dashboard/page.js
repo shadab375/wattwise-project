@@ -37,42 +37,77 @@ const Dashboard = () => {
   }, [year]); // Re-analyze when year changes
 
   const fetchPredictions = async (historicalData) => {
-    // Simple mathematical prediction based on historical trends
-    const predictNextValues = (values, months = 6) => {
+    const predictNextValues = (values, months = 6, growthFactor = 1.0) => {
       if (values.length < 2) return [];
       
-      // Calculate average month-over-month change
+      // Calculate average month-over-month change with seasonal adjustment
       let totalChange = 0;
       for (let i = 1; i < values.length; i++) {
         totalChange += values[i] - values[i - 1];
       }
-      const avgChange = totalChange / (values.length - 1);
+      const avgChange = (totalChange / (values.length - 1)) * growthFactor;
       
-      // Generate predictions
-      const predictions = [];
       const lastValue = values[values.length - 1];
       const lastDate = new Date(historicalData[historicalData.length - 1].date);
       
-      for (let i = 1; i <= months; i++) {
+      return Array.from({ length: months }, (_, i) => {
         const nextDate = new Date(lastDate);
-        nextDate.setMonth(lastDate.getMonth() + i);
-        const dateStr = nextDate.toISOString().slice(0, 10);
-        
-        predictions.push({
-          date: dateStr,
-          consumption: lastValue + (avgChange * i),
-          solar: (lastValue + (avgChange * i)) * 0.3, // Assume 30% solar
-          otherSources: (lastValue + (avgChange * i)) * 0.7,
-          savings: (lastValue + (avgChange * i)) * 100, // Simple multiplier for savings
-          solarPercentage: 30,
-          totalSavings: (lastValue + (avgChange * i)) * 150,
-        });
-      }
-      return predictions;
+        nextDate.setMonth(lastDate.getMonth() + i + 1);
+        return {
+          value: Math.max(0, lastValue + (avgChange * (i + 1))),
+          date: nextDate.toISOString().slice(0, 10)
+        };
+      });
     };
 
-    const consumptionValues = historicalData.map(d => d.consumption);
-    const predictions = predictNextValues(consumptionValues);
+    const generatePredictions = (historicalData) => {
+      const metrics = [
+        'consumption', 'solar', 'otherSources', 'savings', 'solarPercentage', 
+        'totalSavings', 'htc179', 'htc232', 'totalGED', 'solarCapex', 
+        'solarOpex', 'c2kWh', 'c2SolarPercentage', 'rsPerKWh', 
+        'savingsFrom1MWpSolar', 'savingsFromCapex', 'price',
+        'htc179Amount', 'htc232Amount', 'totalAmount'
+      ];
+
+      // Get predictions for each metric
+      const predictions = {};
+      metrics.forEach(metric => {
+        const values = historicalData.map(d => d[metric]).filter(v => !isNaN(v));
+        let growthFactor = 1.0;
+        
+        // Adjust growth factors based on metric type
+        switch(metric) {
+          case 'solarPercentage':
+          case 'c2SolarPercentage':
+            growthFactor = 0.5; // Slower growth for percentages
+            break;
+          case 'savings':
+          case 'totalSavings':
+          case 'savingsFrom1MWpSolar':
+          case 'savingsFromCapex':
+            growthFactor = 1.2; // Faster growth for savings
+            break;
+          case 'price':
+            growthFactor = 1.1; // Slight increase in prices
+            break;
+          default:
+            growthFactor = 1.0;
+        }
+        
+        predictions[metric] = predictNextValues(values, 6, growthFactor);
+      });
+
+      // Combine predictions into data points
+      return predictions.consumption.map((_, index) => {
+        const dataPoint = { date: predictions.consumption[index].date };
+        metrics.forEach(metric => {
+          dataPoint[metric] = predictions[metric][index]?.value ?? 0;
+        });
+        return dataPoint;
+      });
+    };
+
+    const predictions = generatePredictions(historicalData);
     setPredictedData(predictions);
   };
 
@@ -242,6 +277,16 @@ const Dashboard = () => {
                 <Tooltip />
                 <Legend />
                 <Line type="monotone" dataKey="otherSources" stroke="#ff7300" name="Other Sources" />
+                {showPredictions && predictedData.length > 0 && (
+                  <Line 
+                    type="monotone" 
+                    data={predictedData} 
+                    dataKey="otherSources" 
+                    stroke="#ff4081" 
+                    strokeDasharray="5 5" 
+                    name="Predicted Other Sources"
+                  />
+                )}
               </LineChart>
             </Box>
             <Box>
