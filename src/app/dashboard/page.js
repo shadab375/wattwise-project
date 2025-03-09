@@ -37,24 +37,30 @@ const Dashboard = () => {
   }, [year]); // Re-analyze when year changes
 
   const fetchPredictions = async (historicalData) => {
-    const predictNextValues = (values, months = 6, growthFactor = 1.0) => {
+    const addRandomVariation = (value) => {
+      const variation = (Math.random() * 2 - 1) * 0.01; // Random variation between -1% and +1%
+      return value * (1 + variation);
+    };
+
+    const predictNextValues = (values, months = 6) => {
       if (values.length < 2) return [];
       
-      // Calculate average month-over-month change with seasonal adjustment
-      let totalChange = 0;
-      for (let i = 1; i < values.length; i++) {
-        totalChange += values[i] - values[i - 1];
-      }
-      const avgChange = (totalChange / (values.length - 1)) * growthFactor;
+      // Get the last few months pattern to repeat
+      const patternLength = Math.min(values.length, 12); // Use up to 12 months pattern
+      const pattern = values.slice(-patternLength);
       
-      const lastValue = values[values.length - 1];
       const lastDate = new Date(historicalData[historicalData.length - 1].date);
       
       return Array.from({ length: months }, (_, i) => {
         const nextDate = new Date(lastDate);
         nextDate.setMonth(lastDate.getMonth() + i + 1);
+        
+        // Use pattern value with small random variation
+        const patternValue = pattern[i % pattern.length];
+        const predictedValue = addRandomVariation(patternValue);
+        
         return {
-          value: Math.max(0, lastValue + (avgChange * (i + 1))),
+          value: Math.max(0, predictedValue), // Ensure non-negative
           date: nextDate.toISOString().slice(0, 10)
         };
       });
@@ -73,28 +79,7 @@ const Dashboard = () => {
       const predictions = {};
       metrics.forEach(metric => {
         const values = historicalData.map(d => d[metric]).filter(v => !isNaN(v));
-        let growthFactor = 1.0;
-        
-        // Adjust growth factors based on metric type
-        switch(metric) {
-          case 'solarPercentage':
-          case 'c2SolarPercentage':
-            growthFactor = 0.5; // Slower growth for percentages
-            break;
-          case 'savings':
-          case 'totalSavings':
-          case 'savingsFrom1MWpSolar':
-          case 'savingsFromCapex':
-            growthFactor = 1.2; // Faster growth for savings
-            break;
-          case 'price':
-            growthFactor = 1.1; // Slight increase in prices
-            break;
-          default:
-            growthFactor = 1.0;
-        }
-        
-        predictions[metric] = predictNextValues(values, 6, growthFactor);
+        predictions[metric] = predictNextValues(values, 6);
       });
 
       // Combine predictions into data points
@@ -297,7 +282,17 @@ const Dashboard = () => {
                 <YAxis stroke="white" />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="savings" stroke="#82ca9d" />
+                <Line type="monotone" dataKey="savings" stroke="#82ca9d" name="Actual Savings" />
+                {showPredictions && predictedData.length > 0 && (
+                  <Line 
+                    type="monotone" 
+                    data={predictedData} 
+                    dataKey="savings" 
+                    stroke="#ff4081" 
+                    strokeDasharray="5 5" 
+                    name="Predicted Savings"
+                  />
+                )}
               </LineChart>
             </Box>
           </Box>
@@ -310,7 +305,18 @@ const Dashboard = () => {
                 <YAxis stroke="white" />
                 <Tooltip />
                 <Legend />
-                <Area type="monotone" dataKey="solarPercentage" stroke="#82ca9d" fill="#82ca9d" />
+                <Area type="monotone" dataKey="solarPercentage" stroke="#82ca9d" fill="#82ca9d" name="Actual Solar %" />
+                {showPredictions && predictedData.length > 0 && (
+                  <Area 
+                    type="monotone" 
+                    data={predictedData} 
+                    dataKey="solarPercentage" 
+                    stroke="#ff4081" 
+                    fill="#ff408133" 
+                    strokeDasharray="5 5" 
+                    name="Predicted Solar %"
+                  />
+                )}
               </AreaChart>
             </Box>
             <Box>
@@ -321,7 +327,17 @@ const Dashboard = () => {
                 <YAxis stroke="white" />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="totalSavings" stroke="#ff7300" />
+                <Line type="monotone" dataKey="totalSavings" stroke="#ff7300" name="Actual Savings" />
+                {showPredictions && predictedData.length > 0 && (
+                  <Line 
+                    type="monotone" 
+                    data={predictedData} 
+                    dataKey="totalSavings" 
+                    stroke="#ff4081" 
+                    strokeDasharray="5 5" 
+                    name="Predicted Savings"
+                  />
+                )}
               </LineChart>
             </Box>
           </Box>
@@ -338,8 +354,14 @@ const Dashboard = () => {
                 <YAxis stroke="white" />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="htc179" fill="#8884d8" name="HTC 179" />
-                <Bar dataKey="htc232" fill="#82ca9d" name="HTC 232" />
+                <Bar dataKey="htc179" fill="#8884d8" name="HTC 179 Actual" />
+                <Bar dataKey="htc232" fill="#82ca9d" name="HTC 232 Actual" />
+                {showPredictions && predictedData.length > 0 && (
+                  <>
+                    <Bar dataKey="htc179" data={predictedData} fill="#ff4081" name="HTC 179 Predicted" fillOpacity={0.5} />
+                    <Bar dataKey="htc232" data={predictedData} fill="#ff8cb1" name="HTC 232 Predicted" fillOpacity={0.5} />
+                  </>
+                )}
               </BarChart>
             </Box>
             <Box>
@@ -350,7 +372,17 @@ const Dashboard = () => {
                 <YAxis stroke="white" />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="totalGED" stroke="#ff7300" />
+                <Line type="monotone" dataKey="totalGED" stroke="#ff7300" name="Actual GED" />
+                {showPredictions && predictedData.length > 0 && (
+                  <Line 
+                    type="monotone" 
+                    data={predictedData} 
+                    dataKey="totalGED" 
+                    stroke="#ff4081" 
+                    strokeDasharray="5 5" 
+                    name="Predicted GED"
+                  />
+                )}
               </LineChart>
             </Box>
           </Box>
@@ -363,8 +395,14 @@ const Dashboard = () => {
                 <YAxis stroke="white" />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="solarCapex" fill="#8884d8" name="Solar Capex" />
-                <Bar dataKey="solarOpex" fill="#82ca9d" name="Solar Opex" />
+                <Bar dataKey="solarCapex" fill="#8884d8" name="Solar Capex Actual" />
+                <Bar dataKey="solarOpex" fill="#82ca9d" name="Solar Opex Actual" />
+                {showPredictions && predictedData.length > 0 && (
+                  <>
+                    <Bar dataKey="solarCapex" data={predictedData} fill="#ff4081" name="Solar Capex Predicted" fillOpacity={0.5} />
+                    <Bar dataKey="solarOpex" data={predictedData} fill="#ff8cb1" name="Solar Opex Predicted" fillOpacity={0.5} />
+                  </>
+                )}
               </BarChart>
             </Box>
             <Box>
@@ -375,8 +413,28 @@ const Dashboard = () => {
                 <YAxis stroke="white" />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="c2kWh" stroke="#ff7300" name="C2 kWh" />
-                <Line type="monotone" dataKey="c2SolarPercentage" stroke="#82ca9d" name="Solar Percentage of C2" />
+                <Line type="monotone" dataKey="c2kWh" stroke="#ff7300" name="C2 kWh Actual" />
+                <Line type="monotone" dataKey="c2SolarPercentage" stroke="#82ca9d" name="Solar % Actual" />
+                {showPredictions && predictedData.length > 0 && (
+                  <>
+                    <Line 
+                      type="monotone" 
+                      data={predictedData} 
+                      dataKey="c2kWh" 
+                      stroke="#ff4081" 
+                      strokeDasharray="5 5" 
+                      name="C2 kWh Predicted"
+                    />
+                    <Line 
+                      type="monotone" 
+                      data={predictedData} 
+                      dataKey="c2SolarPercentage" 
+                      stroke="#ff8cb1" 
+                      strokeDasharray="5 5" 
+                      name="Solar % Predicted"
+                    />
+                  </>
+                )}
               </LineChart>
             </Box>
           </Box>
@@ -389,7 +447,17 @@ const Dashboard = () => {
                 <YAxis stroke="white" />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="rsPerKWh" stroke="#ff7300" />
+                <Line type="monotone" dataKey="rsPerKWh" stroke="#ff7300" name="Actual Rs/kWh" />
+                {showPredictions && predictedData.length > 0 && (
+                  <Line 
+                    type="monotone" 
+                    data={predictedData} 
+                    dataKey="rsPerKWh" 
+                    stroke="#ff4081" 
+                    strokeDasharray="5 5" 
+                    name="Predicted Rs/kWh"
+                  />
+                )}
               </LineChart>
             </Box>
             <Box>
@@ -400,8 +468,14 @@ const Dashboard = () => {
                 <YAxis stroke="white" />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="savingsFrom1MWpSolar" fill="#8884d8" name="Savings from 1 MWp Solar" />
-                <Bar dataKey="savingsFromCapex" fill="#82ca9d" name="Savings from Capex" />
+                <Bar dataKey="savingsFrom1MWpSolar" fill="#8884d8" name="1 MWp Solar Actual" />
+                <Bar dataKey="savingsFromCapex" fill="#82ca9d" name="Capex Actual" />
+                {showPredictions && predictedData.length > 0 && (
+                  <>
+                    <Bar dataKey="savingsFrom1MWpSolar" data={predictedData} fill="#ff4081" name="1 MWp Solar Predicted" fillOpacity={0.5} />
+                    <Bar dataKey="savingsFromCapex" data={predictedData} fill="#ff8cb1" name="Capex Predicted" fillOpacity={0.5} />
+                  </>
+                )}
               </BarChart>
             </Box>
           </Box>
