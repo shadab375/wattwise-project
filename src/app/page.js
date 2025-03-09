@@ -3,11 +3,62 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Typography, Button, Grid } from "@mui/material";
+import { Typography, Button, Grid, TextField, Paper, CircularProgress } from "@mui/material";
 import CustomNavbar from "./components/CustomNavbar";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from "react-icons/fa";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import ReactMarkdown from 'react-markdown';
 
 const Home = () => {
+  const [chatHistory, setChatHistory] = useState([]);
+  const [userInput, setUserInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const systemContext = `You are WattWise AI, an AI assistant for BITS Pilani Goa Campus's energy management system.
+Key Information:
+- WattWise is an energy monitoring and optimization platform for BITS Goa campus
+- The platform provides real-time energy consumption data and insights
+- BITS Goa is committed to sustainability and reducing its carbon footprint
+- The campus has various buildings including academic blocks, laboratories, hostels, and administrative buildings
+- WattWise helps track and optimize energy usage across all these facilities
+
+Please provide helpful responses related to energy conservation, sustainability initiatives at BITS Goa, and how WattWise helps achieve these goals.`;
+
+  const handleSendMessage = async () => {
+    if (!userInput.trim()) return;
+
+    try {
+      setIsLoading(true);
+      const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+      // Prepare chat history for context
+      const chatContext = chatHistory.map(msg => 
+        `${msg.role}: ${msg.content}`
+      ).join("\n");
+
+      const prompt = `${systemContext}\n\nChat History:\n${chatContext}\n\nUser: ${userInput}\n\nAssistant:`;
+      
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+
+      const newMessage = { role: "user", content: userInput };
+      const aiResponse = { role: "assistant", content: text };
+      
+      setChatHistory([...chatHistory, newMessage, aiResponse]);
+      setUserInput("");
+    } catch (error) {
+      console.error("Error with chat:", error);
+      setChatHistory([
+        ...chatHistory,
+        { role: "user", content: userInput },
+        { role: "assistant", content: "I apologize, but I encountered an error. Please try again." }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="bg-[#04080F] min-h-screen text-[#FFFFFF]">
@@ -134,6 +185,97 @@ const Home = () => {
               ))}
             </Grid>
           </Grid>
+        </section>
+
+        <section className="mb-16">
+          <Typography variant="h3" className="mb-8 text-center text-[#507DBC]">
+            Chat with WattWise AI
+          </Typography>
+          <Paper className="bg-[#507DBC] bg-opacity-10 p-6 rounded-lg shadow-lg">
+            <div className="h-[400px] overflow-y-auto mb-4 p-4 bg-[#04080F] rounded-lg">
+              {chatHistory.map((message, index) => (
+                <div
+                  key={index}
+                  className={`mb-4 ${
+                    message.role === "user" ? "text-right" : "text-left"
+                  }`}
+                >
+                  <div
+                    className={`inline-block p-3 rounded-lg max-w-[80%] markdown-wrapper ${
+                      message.role === "user"
+                        ? "bg-[#507DBC] text-white"
+                        : "bg-[#B8DBD9] text-[#04080F]"
+                    }`}
+                  >
+                    <ReactMarkdown 
+                      components={{
+                        p: ({node, children}) => <p className="mb-2 whitespace-pre-wrap">{children}</p>,
+                        strong: ({node, children}) => <span className="font-bold">{children}</span>,
+                        h3: ({node, children}) => <h3 className="text-lg font-bold mb-2">{children}</h3>,
+                        ul: ({node, children}) => <ul className="list-disc ml-4 mb-2">{children}</ul>,
+                        li: ({node, children}) => <li className="mb-1">{children}</li>
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="text-center">
+                  <CircularProgress size={24} className="text-[#507DBC]" />
+                </div>
+              )}
+            </div>
+
+            <style jsx global>{`
+              .markdown-wrapper {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+              }
+              .markdown-wrapper p {
+                margin-bottom: 0.5rem;
+              }
+              .markdown-wrapper strong {
+                font-weight: 600;
+              }
+              .markdown-wrapper ul {
+                margin-left: 1rem;
+                margin-bottom: 0.5rem;
+              }
+              .markdown-wrapper li {
+                margin-bottom: 0.25rem;
+              }
+            `}</style>
+
+            <div className="flex gap-2">
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Ask about energy conservation at BITS Goa..."
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                className="bg-[#04080F] rounded-lg"
+                sx={{
+                  input: { color: "#FFFFFF" },
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: "#507DBC" },
+                    "&:hover fieldset": { borderColor: "#B8DBD9" },
+                    "&.Mui-focused fieldset": { borderColor: "#507DBC" },
+                  },
+                }}
+              />
+              <Button
+                variant="contained"
+                onClick={handleSendMessage}
+                disabled={isLoading}
+                className="bg-[#507DBC] hover:bg-[#3A5A8C] text-white px-6 py-3 rounded-lg text-lg font-semibold transition duration-300"
+              >
+                Send
+              </Button>
+            </div>
+          </Paper>
         </section>
 
         <section>

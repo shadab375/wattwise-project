@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { Box, Container, Typography, MenuItem, Select, Button, Switch, FormControlLabel } from '@mui/material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const Dashboard = () => {
   const { data: session, status } = useSession();
@@ -13,6 +14,45 @@ const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showPredictions, setShowPredictions] = useState(false);
   const [predictedData, setPredictedData] = useState([]);
+  const [geminiInsights, setGeminiInsights] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const analyzeDataWithGemini = async (processedData) => {
+    try {
+      setIsAnalyzing(true);
+      const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      
+      // Prepare data summary for Gemini
+      const dataSummary = {
+        totalConsumption: processedData.reduce((acc, item) => acc + item.consumption, 0),
+        averageSolar: processedData.reduce((acc, item) => acc + item.solar, 0) / processedData.length,
+        totalSavings: processedData.reduce((acc, item) => acc + item.savings, 0),
+        solarPercentage: processedData.reduce((acc, item) => acc + item.solarPercentage, 0) / processedData.length,
+      };
+
+      const prompt = `Analyze this energy consumption data and provide key insights:
+        Total Consumption: ${dataSummary.totalConsumption.toFixed(2)} kWh
+        Average Solar Generation: ${dataSummary.averageSolar.toFixed(2)} kWh
+        Total Savings: Rs. ${dataSummary.totalSavings.toFixed(2)}
+        Average Solar Percentage: ${dataSummary.solarPercentage.toFixed(2)}%
+        
+        Please provide:
+        1. Key trends in energy consumption
+        2. Solar energy utilization analysis
+        3. Cost savings impact
+        4. Recommendations for improvement`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      setGeminiInsights(response.text());
+    } catch (error) {
+      console.error('Error analyzing data with Gemini:', error);
+      setGeminiInsights("Error: Failed to analyze data with Gemini");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,10 +61,9 @@ const Dashboard = () => {
         const result = await response.json();
         setData(result);
         
-        // If predictions are enabled, fetch them immediately after getting the data
-        if (showPredictions) {
-          const processedData = processData(result);
-          fetchPredictions(processedData.lineData);
+        const processedData = processData(result).lineData;
+        if (processedData.length > 0) {
+          analyzeDataWithGemini(processedData);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -32,7 +71,7 @@ const Dashboard = () => {
     };
 
     fetchData();
-  }, [showPredictions]);
+  }, [year]); // Re-analyze when year changes
 
   const fetchPredictions = async (historicalData) => {
     try {
@@ -138,6 +177,16 @@ const Dashboard = () => {
       >
         Energy Consumption Dashboard
       </Typography>
+
+      {/* Add Gemini Insights Section */}
+      <Box sx={{ mb: 4, p: 3, backgroundColor: 'rgba(80, 125, 188, 0.1)', borderRadius: '10px' }}>
+        <Typography variant="h6" sx={{ color: '#507DBC', mb: 2 }}>
+          AI Insights {isAnalyzing && '(Analyzing...)'}
+        </Typography>
+        <Typography variant="body1" sx={{ color: 'white', whiteSpace: 'pre-line' }}>
+          {geminiInsights || 'Analyzing data...'}
+        </Typography>
+      </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
         <Select value={year} onChange={handleYearChange} sx={{ color: 'white', backgroundColor: 'black' }}>
